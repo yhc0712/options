@@ -67,3 +67,20 @@ class Position_analysis():
     def get_position(self):
         
         return self.Position
+
+market_data = {
+    'S': 17500,
+    'r': 0.02,
+    'Sigma': 0.28,
+    'T': 6/252
+}
+
+pos = Position_analysis()
+
+call_1 = Option(Prod='Call', S=market_data['S'], K=17300, T=market_data['T'], r=market_data['r'], Sigma=market_data['Sigma'], Position=1)
+call_2 = Option(Prod='Call', S=market_data['S'], K=17700, T=market_data['T'], r=market_data['r'], Sigma=market_data['Sigma'], Position=-1)
+
+pos.new_options(call_1)
+pos.new_options(call_2)
+
+pos.Calculate(S_sim=17650)
