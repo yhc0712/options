@@ -60,8 +60,8 @@ class Option():
     def update_greeks(self, S_sim):
         self.S_sim = S_sim
         self.bsm_price = BlackScholes(self.S_sim, self.K, self.T, self.r, self.Sigma, self.Prod) * self.cash_coefficient
-        self.cash_delta = delta(self.S_sim, self.K, self.T, self.r, self.Sigma, self.Prod) * self.cash_coefficient
-        self.cash_gamma = gamma(1, self.S_sim, self.K, self.T, self.r, self.Sigma, self.Prod) * self.cash_coefficient
+        self.cash_delta = delta(self.S_sim, self.K, self.T, self.r, self.Sigma, self.Prod) * self.S_sim * self.cash_coefficient
+        self.cash_gamma = gamma(1, self.S_sim, self.K, self.T, self.r, self.Sigma, self.Prod) * self.S_sim  * self.cash_coefficient
         self.theta = theta_one_day(self.S_sim, self.K, self.T, self.r, self.Sigma, self.Prod) * self.cash_coefficient
         self.vega = vega_one_percent(self.S_sim, self.K, self.T, self.r, self.Sigma, self.Prod) * self.cash_coefficient
         self.pnl = (BlackScholes(self.S_sim, self.K, self.T, self.r, self.Sigma, self.Prod) - BlackScholes(self.S, self.K, self.T, self.r, self.Sigma, self.Prod)) * self.cash_coefficient
