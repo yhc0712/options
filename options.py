@@ -82,9 +82,8 @@ class Option:
         self.update_greeks()
 
     def update_greeks(self):
-        self.bsm_price = (
-            BlackScholes(self.Spot_sim, self.K, self.T, self.r, self.Sigma, self.Prod)
-            * self._cash_coefficient
+        self.bsm_price = BlackScholes(
+            self.Spot_sim, self.K, self.T, self.r, self.Sigma, self.Prod
         )
         self.cash_delta = (
             delta(self.Spot_sim, self.K, self.T, self.r, self.Sigma, self.Prod)

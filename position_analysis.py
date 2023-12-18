@@ -4,11 +4,68 @@ from options import Option
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 
+TXO_MARGIN_A = 44_000
+TXO_MARGIN_B = 22_000
+TX_INITIAL_MARGIN = 167_000
+
+
+def Margin_futures(Original_Spot, S_sim, Multiplier, Initial_margin, Position):
+    pnl = (S_sim - Original_Spot) * Multiplier * Position
+
+    return -pnl + Initial_margin
+
+
+def Margin_options(
+    Prod, Original_Spot, S_sim, K, T, r, Sigma, Multiplier, Position, A, B
+):
+    op = Option(
+        Prod=Prod,
+        Original_Spot=Original_Spot,
+        K=K,
+        T=T,
+        r=r,
+        Sigma=Sigma,
+        Position=Position,
+    )
+
+    if op.Position > 0:
+        return 0
+    else:
+        op.Spot_sim = S_sim
+        if op.Prod == "Call":
+            Margin = (
+                op.bsm_price
+                + max(A - max((op.K - op.Original_Spot) * op._Multiplier, 0), B)
+            ) * abs(op.Position)
+        else:
+            Margin = (
+                op.bsm_price
+                + max(A - max((op.Original_Spot - op.K) * op._Multiplier, 0), B)
+            ) * abs(op.Position)
+
+        _op = op
+        _op.Spot_sim = _op.Original_Spot
+
+        Pnl = (op.bsm_price - _op.bsm_price) * op._cash_coefficient
+
+        return Margin - Pnl
+
 
 @dataclass
 class Position_analysis:
     _Position: pd.DataFrame = pd.DataFrame(
-        columns=["Prod", "S", "K", "T", "r", "Sigma", "Position", "Multiplier"]
+        columns=[
+            "Prod",
+            "S",
+            "K",
+            "T",
+            "r",
+            "Sigma",
+            "Position",
+            "Multiplier",
+            "Margin",
+            "bsm_price",
+        ]
     )
 
     @property
@@ -62,6 +119,13 @@ class Position_analysis:
                     * self.Position.loc[i, "Multiplier"]
                     * self.Position.loc[i, "Position"]
                 )
+                self.Position.loc[i, "Margin"] = Margin_futures(
+                    self.Position.loc[i, "S"],
+                    self.Position.loc[i, "S_sim"],
+                    self.Position.loc[i, "Multiplier"],
+                    TX_INITIAL_MARGIN,
+                    self.Position.loc[i, "Position"],
+                )
 
             elif self.Position.loc[i, "Prod"] in ("Call", "Put"):
                 op = Option(
@@ -74,22 +138,52 @@ class Position_analysis:
                     Position=self.Position.loc[i, "Position"],
                 )
                 op.Spot_sim = S_sim
+                self.Position.loc[i, "bsm_price"] = op.bsm_price
                 self.Position.loc[i, "Cash Delta"] = op.cash_delta
                 self.Position.loc[i, "Cash Gamma"] = op.cash_gamma
                 self.Position.loc[i, "Theta"] = op.theta
                 self.Position.loc[i, "Vega"] = op.vega
                 self.Position.loc[i, "Pnl"] = op.pnl
+                self.Position.loc[i, "Margin"] = Margin_options(
+                    op.Prod,
+                    op.Original_Spot,
+                    op.Spot_sim,
+                    op.K,
+                    op.T,
+                    op.r,
+                    op.Sigma,
+                    op._Multiplier,
+                    op.Position,
+                    TXO_MARGIN_A,
+                    TXO_MARGIN_B,
+                )
 
     def Simulation(self, return_upper: float = 0.1, return_lower: float = -0.1):
         df_Simulation = pd.DataFrame(
-            columns=["S_sim", "Cash Delta", "Cash Gamma", "Theta", "Vega", "Pnl"]
+            columns=[
+                "S_sim",
+                "Cash Delta",
+                "Cash Gamma",
+                "Theta",
+                "Vega",
+                "Pnl",
+                "Margin",
+            ]
         )
 
-        for i in np.arange(1 + return_upper, 1 + return_lower, -0.01):
-            Simulation_spot = self.Position.loc[0, "S"] * i
+        for i in np.arange(1 + return_lower, 1 + return_upper, 0.01):
+            Simulation_spot = round(self.Position.loc[0, "S"] * i, 2)
             self.Calculate(Simulation_spot)
             _df_trade = self.Position.loc[
-                :, ["Cash Delta", "Cash Gamma", "Theta", "Vega", "Pnl"]
+                :,
+                [
+                    "Cash Delta",
+                    "Cash Gamma",
+                    "Theta",
+                    "Vega",
+                    "Pnl",
+                    "Margin",
+                ],
             ].sum()
             _df_trade["S_sim"] = Simulation_spot
             _df_trade = _df_trade.to_frame().T
@@ -98,48 +192,67 @@ class Position_analysis:
         return df_Simulation
 
 
-market_data = {"S": 10000, "r": 0.01, "Sigma": 0.2, "T": 22 / 252}
+market_data = {"S": 10000, "r": 0.01, "Sigma": 0.3, "T": 5 / 252}
 
 pos = Position_analysis()
 
 call_1 = Option(
     Prod="Call",
     Original_Spot=market_data["S"],
-    K=10000,
+    K=10100,
+    T=market_data["T"],
+    r=market_data["r"],
+    Sigma=market_data["Sigma"],
+    Position=1,
+)
+call_2 = Option(
+    Prod="Call",
+    Original_Spot=market_data["S"],
+    K=10150,
     T=market_data["T"],
     r=market_data["r"],
     Sigma=market_data["Sigma"],
     Position=-1,
 )
-call_2 = Option(
-    Prod="Put",
+call_3 = Option(
+    Prod="Call",
     Original_Spot=market_data["S"],
-    K=10000,
+    K=10100,
     T=market_data["T"],
     r=market_data["r"],
     Sigma=market_data["Sigma"],
-    Position=-1,
+    Position=1,
+)
+put_2 = Option(
+    Prod="Put",
+    Original_Spot=market_data["S"],
+    K=10100,
+    T=market_data["T"],
+    r=market_data["r"],
+    Sigma=market_data["Sigma"],
+    Position=1,
 )
 
 pos.new_options(call_1)
 pos.new_options(call_2)
+# pos.new_options(call_3)
+# pos.new_options(call_4)
 
 
 sim = pos.Simulation()
 
-
 fig, ax1 = plt.subplots(1, 1, sharex=True)
 ax1.fill_between(
-    sim.index,
-    sim["Pnl"],
+    sim.index.astype(float),
+    sim["Pnl"].astype(float),
     where=sim["Pnl"] >= 0,
     facecolor="green",
     interpolate=True,
     alpha=0.5,
 )
 ax1.fill_between(
-    sim.index,
-    sim["Pnl"],
+    sim.index.astype(float),
+    sim["Pnl"].astype(float),
     where=sim["Pnl"] < 0,
     facecolor="red",
     interpolate=True,
