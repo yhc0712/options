@@ -8,3 +8,6 @@ __pycache__/margin_data.cpython-38.pyc
 test/test_contract.py
 __pycache__/contract.cpython-38.pyc
 test/__pycache__/test_contract.cpython-38.pyc
+__pycache__/position.cpython-38.pyc
+test/__pycache__/test_position.cpython-38.pyc
+.vscode/launch.json

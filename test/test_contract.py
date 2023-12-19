@@ -32,9 +32,15 @@ class TestCall(unittest.TestCase):
         expected_delta = 0.932
         self.assertEqual(round(self.option.delta, 3), expected_delta)
 
-    def test_call_gamma(self):
+    def call_gamma(self):
         expected_gamma = 0.003
         self.assertEqual(round(self.option.gamma, 3), expected_gamma)
+
+    def test_simulation(self):
+        original_delta = self.option.delta
+        self.option.simulation_spot = 250
+        print(f"Original delta: {original_delta}; New delta: {self.option.delta}")
+        self.assertNotEqual(self.option.delta, original_delta)
 
 
 class TestPut(unittest.TestCase):
