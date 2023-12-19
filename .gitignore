@@ -1,2 +1,10 @@
 __pycache__/options.cpython-38.pyc
 .vscode/settings.json
+test/__pycache__/test_option_contract.cpython-38.pyc
+.gitignore
+__pycache__/option_contract.cpython-38.pyc
+test/__pycache__/test_option_contract.cpython-38-pytest-7.4.3.pyc
+__pycache__/margin_data.cpython-38.pyc
+test/test_contract.py
+__pycache__/contract.cpython-38.pyc
+test/__pycache__/test_contract.cpython-38.pyc

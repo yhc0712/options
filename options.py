@@ -7,11 +7,12 @@ def BlackScholes(S, K, T, r, Sigma, OptionType):
     d1 = (np.log(S / K) + (r + 0.5 * Sigma**2) * T) / (Sigma * np.sqrt(T))
     d2 = d1 - Sigma * np.sqrt(T)
 
-    if OptionType == "Call":
+    if OptionType == "call":
         cp_coefficient = 1
-    elif OptionType == "Put":
+    elif OptionType == "put":
         cp_coefficient = -1
     else:
+        print(OptionType)
         raise Exception("Error: OptionType must be Call or Put.")
 
     premium = cp_coefficient * (
@@ -26,13 +27,12 @@ def delta(S, K, T, r, Sigma, OptionType):
     d1 = (np.log(S / K) + (r + 0.5 * Sigma**2) * T) / (Sigma * np.sqrt(T))
     N_d1 = norm.cdf(d1)
 
-    if OptionType == "Call":
+    if OptionType == "call":
         return N_d1
-    elif OptionType == "Put":
+    elif OptionType == "put":
         return N_d1 - 1
     else:
-        print("Error: OptionType must be Call or Put.")
-        return 0
+        raise Exception("Error: OptionType must be Call or Put.")
 
 
 def gamma(percent, S, K, T, r, Sigma, OptionType):
