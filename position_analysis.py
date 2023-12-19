@@ -3,10 +3,13 @@ import pandas as pd
 from options import Option
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
+from margin_data import Txo_A, Txo_B, Tx, Mtx
 
-TXO_MARGIN_A = 44_000
-TXO_MARGIN_B = 22_000
-TX_INITIAL_MARGIN = 167_000
+
+TXO_MARGIN_A = Txo_A.initial_margin
+TXO_MARGIN_B = Txo_B.initial_margin
+TX_INITIAL_MARGIN = Tx.initial_margin
+MTX_INITIAL_MARGIN = Mtx.initial_margin
 
 
 def Margin_futures(Original_Spot, S_sim, Multiplier, Initial_margin, Position):
