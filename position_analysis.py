@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from margin_data import Txo_A, Txo_B, Tx, Mtx
 
 
-TXO_MARGIN_A = Txo_A.initial_margin
-TXO_MARGIN_B = Txo_B.initial_margin
+TXO_A_INITIAL_MARGIN = Txo_A.initial_margin
+TXO_B_INITIAL_MARGIN = Txo_B.initial_margin
 TX_INITIAL_MARGIN = Tx.initial_margin
 MTX_INITIAL_MARGIN = Mtx.initial_margin
 
@@ -157,8 +157,8 @@ class Position_analysis:
                     op.Sigma,
                     op._Multiplier,
                     op.Position,
-                    TXO_MARGIN_A,
-                    TXO_MARGIN_B,
+                    TXO_A_INITIAL_MARGIN,
+                    TXO_B_INITIAL_MARGIN,
                 )
 
     def Simulation(self, return_upper: float = 0.1, return_lower: float = -0.1):
